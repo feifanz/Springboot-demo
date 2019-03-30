@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Membership Management</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <style>
+        #searchbox{
+            margin: auto;
+            width:500px;
+        }
+        #searchbox input{
+            width: 100px;
+            height: 34px;
+            padding: 6px 12px;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .modal-body input{
+            margin-bottom: 15px !important;
+        }
+        .modal-body span
+        {
+            display: block;
+            margin: 3px;
+            font-size: 14px;
+        }
+        .text-center{
+            margin-bottom: 50px;
+        }
+        .container {
+            margin-top: 20px;
+        }
+        .editButton{
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="text-center" >
+    <h3>Club Membership Management System</h3>
+</div>
+<div id="searchbox">
+    <span><input type="text" placeholder="id" id="s_id"></span>
+    <span><input type="text" placeholder="name" id="s_name"></span>
+    <span><button id="searchbutton" class="btn btn-primary" >Search</button></span>
+    <span><button id="resetbutton"  class="btn btn-info" >Reset</button></span>
+    <span><button class="addbutton btn btn-warning"  data-toggle="modal" data-target="#myModal">+Add new member</button></span>
+</div>
+<div class="container">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>id</th>
+            <th>name</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Description</th>
+            <th>Membership Level</th>
+            <th>status</th>
+            <th>options</th>
+        </tr>
+        </thead>
+        <tbody id="tableContent">
+        </tbody>
+    </table>
+</div>
+<!--model-->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">
+                    Membership
+                </h4>
+            </div>
+            <div class="modal-body">
+
+                <span>Id</span>
+                <input type="text"  class="form-control" placeholder="id" id="a_id" readonly="readonly">
+
+                <span>Name</span>
+                <input type="text" class="form-control" placeholder="name" id="a_name">
+
+                <span>Start Date</span>
+                <input type="date" class="form-control" placeholder="startDate" id="a_startDate">
+
+                <span>End Date</span>
+                <input type="date" class="form-control" placeholder="endDate" id="a_endDate">
+
+                <span>Description</span>
+                <input type="text" class="form-control" placeholder="description" id="a_description">
+
+                <span>Membership Level</span>
+                <input type="text" class="form-control" placeholder="membership level" id="a_level">
+
+                <span>Membership Status</span>
+                <input type="text" class="form-control" placeholder="status" id="a_status">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancel">
+                    cancel
+                </button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="add">
+                    Add
+                </button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" id="edit">
+                    edit
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+</body>
+
+<script>
+    function renderTable(requestParas){
+        $.get("/api/allmembers",requestParas,function(datas,status){
+            console.log(datas);
+            $('#tableContent').empty();
+            for(var i = 0 ; i < datas.length ; i++){
+                var data = datas[i];
+                var tr1 = '<td>'+ data["id"]+'<\/td>';
+                var tr2 = '<td>'+ data["name"]+'<\/td>';
+                var tr3 = '<td>'+ data["startDate"]+'<\/td>';
+                var tr4 = '<td>'+ data["endDate"]+'<\/td>';
+                var tr5 = '<td>'+ data["description"]+'<\/td>';
+                var tr6 = '<td>'+ data["level"]+'<\/td>';
+                var tr7 = '<td>'+ data["status"]+'<\/td>';
+                var tr8 = '<td id ='+ data["id"] +'><button class="editButton btn btn-primary" data-toggle="modal" data-target="#myModal">Edit</button><button class="deleteButton btn btn-danger">Delete</button></td>'
+                $('#tableContent').append('<tr>'+tr1+tr2+tr3+tr4+tr5+tr6+tr7+tr8+'<\/tr>');
+            }
+            deleteButtonEvent();
+        });
+    }
+
+    function searchButtonEvent(){
+        $("#searchbutton").click(function(){
+            var paras = {
+                id: $("#s_id").val(),
+                name:$("#s_name").val()
+            }
+            renderTable(paras);
+        });
+    }
+
+    function resetButtonEvent(){
+        $("#resetbutton").click(function(){
+            $("#s_id").val("");
+            $("#s_name").val("")
+            var paras = {
+                id: $("#s_id").val(),
+                name:$("#s_name").val()
+            }
+            renderTable(paras);
+        });
+    }
+
+    function addButtonEvent(){
+        $("#add").click(function(){
+            var paras = {
+                name:$("#a_name").val(),
+                startDate:$("#a_startDate").val(),
+                endDate:$("#a_endDate").val(),
+                description:$("#a_description").val(),
+                level:$("#a_level").val(),
+                status:$("#a_status").val()
+            };
+            $.get("/api/addmembers",paras,function(datas,status){
+                alert(datas);
+                $("#resetbutton").click();
+            });
+        });
+    }
+
+    function editButtonEvent(){
+        $("#edit").click(function(){
+            var paras = {
+                id:$("#a_id").val(),
+                name:$("#a_name").val(),
+                startDate:$("#a_startDate").val(),
+                endDate:$("#a_endDate").val(),
+                description:$("#a_description").val(),
+                level:$("#a_level").val(),
+                status:$("#a_status").val()
+            };
+            $.get("/api/editmembers",paras,function(datas,status){
+                alert(datas);
+                $("#resetbutton").click();
+            });
+        });
+    }
+
+    function deleteButtonEvent(){
+        $(".deleteButton").click(function(){
+            var id = $(this).parent().attr('id');
+            var paras = {
+                id:id
+            }
+            $.get('api/deletemembers',paras,function(datas,status){
+                alert(datas);
+                $("#resetbutton").click();
+            })
+        });
+    }
+
+    function popwinEvent(){
+        $('#myModal').on('show.bs.modal', function (event) {
+            var button = $(event.relatedTarget);
+            var type = button.attr('class').split(' ')[0];
+            console.log(type);
+            if(type == 'addbutton'){
+                $("#edit").hide();
+                $("#add").show();
+                $("#a_id").val('auto generate');
+                $("#a_name").val('');
+                $("#a_startDate").val('');
+                $("#a_endDate").val('');
+                $("#a_description").val('');
+                $("#a_level").val('');
+                $("#a_status").val('');
+            }else{
+                $("#add").hide();
+                $("#edit").show();
+                var id = button.parent().attr('id');
+                var paras = {
+                    id:id
+                }
+                $.get('api/allmembers', paras,function(datas,status){
+                    var d = datas[0];
+                    $("#a_id").val(d['id']);
+                    $("#a_name").val(d['name']);
+                    $("#a_startDate").val(d['startDate']);
+                    $("#a_endDate").val(d['endDate']);
+                    $("#a_description").val(d['description']);
+                    $("#a_level").val(d['level']);
+                    $("#a_status").val(d['status']);
+                })
+
+            }
+        })
+    }
+    $(document).ready(function(){
+        renderTable();
+        searchButtonEvent();
+        resetButtonEvent();
+        addButtonEvent();
+        editButtonEvent();
+        popwinEvent();
+    });
+
+</script>
+</html>
